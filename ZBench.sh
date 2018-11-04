@@ -6,7 +6,6 @@ if  [ ! -e '/usr/bin/wget' ]; then
     echo "Error: wget command not found. You must be install wget command at first."
     exit 1
 fi
-read -p "Please Enter Your Host Provider: " Provider
 
 
 # Get IP
@@ -59,18 +58,6 @@ PLAIN='\033[0m'
 rm -rf /tmp/report && mkdir /tmp/report
 
 echo "Installing required packages, please wait..."
-
-# Install Virt-what
-if  [ ! -e '/usr/sbin/virt-what' ]; then
-    echo "Installing Virt-What......"
-    if [ "${release}" == "centos" ]; then
-        yum -y install virt-what > /dev/null 2>&1
-    else
-        apt-get update > /dev/null 2>&1
-        apt-get -y install virt-what > /dev/null 2>&1
-    fi
-fi
-
 
 
 # Install uuid
@@ -267,78 +254,10 @@ calc_disk() {
     echo ${total_size}
 }
 
-cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-tram=$( free -m | awk '/Mem/ {print $2}' )
-uram=$( free -m | awk '/Mem/ {print $3}' )
-swap=$( free -m | awk '/Swap/ {print $2}' )
-uswap=$( free -m | awk '/Swap/ {print $3}' )
-up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
-load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
-opsy=$( get_opsy )
-arch=$( uname -m )
-lbit=$( getconf LONG_BIT )
-kern=$( uname -r )
-ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
-disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $2}' ))
-disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
-disk_total_size=$( calc_disk ${disk_size1[@]} )
-disk_used_size=$( calc_disk ${disk_size2[@]} )
 
 
-clear
-next
-echo -e "CPU model            : ${SKYBLUE}$cname${PLAIN}"
-echo -e "Number of cores      : ${SKYBLUE}$cores${PLAIN}"
-echo -e "CPU frequency        : ${SKYBLUE}$freq MHz${PLAIN}"
-echo -e "Total size of Disk   : ${SKYBLUE}$disk_total_size GB ($disk_used_size GB Used)${PLAIN}"
-echo -e "Total amount of Mem  : ${SKYBLUE}$tram MB ($uram MB Used)${PLAIN}"
-echo -e "Total amount of Swap : ${SKYBLUE}$swap MB ($uswap MB Used)${PLAIN}"
-echo -e "System uptime        : ${SKYBLUE}$up${PLAIN}"
-echo -e "Load average         : ${SKYBLUE}$load${PLAIN}"
-echo -e "OS                   : ${SKYBLUE}$opsy${PLAIN}"
-echo -e "Arch                 : ${SKYBLUE}$arch ($lbit Bit)${PLAIN}"
-echo -e "Kernel               : ${SKYBLUE}$kern${PLAIN}"
-echo -ne "Virt                 : "
-virtua=$(virt-what) 2>/dev/null
-
-if [[ ${virtua} ]]; then
-    echo -e "${SKYBLUE}$virtua${PLAIN}"
-else
-    virtua="No Virt"
-    echo -e "${SKYBLUE}No Virt${PLAIN}"
-fi
-
-next
-io1=$( io_test )
-echo -e "I/O speed(1st run)   :${YELLOW}$io1${PLAIN}"
-io2=$( io_test )
-echo -e "I/O speed(2nd run)   :${YELLOW}$io2${PLAIN}"
-io3=$( io_test )
-echo -e "I/O speed(3rd run)   :${YELLOW}$io3${PLAIN}"
-next
 
 
-##Record All Test data
-rm -rf /tmp/info.txt
-touch /tmp/info.txt
-echo $cname >> /tmp/info.txt
-echo $cores >> /tmp/info.txt
-echo $freq MHz >> /tmp/info.txt
-echo "$disk_total_size GB ($disk_used_size GB 已使用) ">> /tmp/info.txt
-echo "$tram MB ($uram MB 已使用) ">> /tmp/info.txt
-echo "$swap MB ($uswap MB 已使用)" >> /tmp/info.txt
-echo $up >> /tmp/info.txt
-echo $load >> /tmp/info.txt
-echo $opsy >> /tmp/info.txt
-echo "$arch ($lbit 位) ">> /tmp/info.txt
-echo $kern >> /tmp/info.txt
-echo $virtua >> /tmp/info.txt
-echo $io1 >> /tmp/info.txt
-echo $io2 >> /tmp/info.txt
-echo $io3 >> /tmp/info.txt
-AKEY=$( uuid )
 
 printf "%-26s%-18s%-20s%-12s\n" "Node Name" "IP Address" "Download Speed" "Latency"
 speed && next
