@@ -1,5 +1,5 @@
 set -x
-ip addr |grep mtu|grep -v lo|awk -F ":" '{print $2}'
+#ip addr |grep mtu|grep -v lo|awk -F ":" '{print $2}'
 echo -n "enter ethernet card name:"
 read ethcard
 cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-${ethcard}
@@ -10,3 +10,4 @@ ONBOOT=yes
 TYPE=Ethernet
 BOOTPROTO=dhcp
 EOF
+echo /etc/sysconfig/network-scripts/ifcfg-${ethcard}
