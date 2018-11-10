@@ -10,4 +10,4 @@ ONBOOT=yes
 TYPE=Ethernet
 BOOTPROTO=dhcp
 EOF
-echo /etc/sysconfig/network-scripts/ifcfg-${ethcard}
+cat /etc/sysconfig/network-scripts/ifcfg-${ethcard}
