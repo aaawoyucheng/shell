@@ -228,12 +228,14 @@ else
 	fi
 	# Get easy-rsa
 	EASYRSAURL='https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz'
-	wget -O ~/easyrsa.tgz "$EASYRSAURL" 2>/dev/null || curl -Lo ~/easyrsa.tgz "$EASYRSAURL"
-	tar xzf ~/easyrsa.tgz -C ~/
+	if [ ! -f `pwd`/easyrsa.tgz ];then
+		wget -O `pwd`/easyrsa.tgz "$EASYRSAURL" 2>/dev/null || curl -Lo `pwd`/easyrsa.tgz "$EASYRSAURL"
+	fi
+	tar xzf `pwd`/easyrsa.tgz -C ~/
 	mv ~/EasyRSA-3.0.5/ /etc/openvpn/
 	mv /etc/openvpn/EasyRSA-3.0.5/ /etc/openvpn/easy-rsa/
 	chown -R root:root /etc/openvpn/easy-rsa/
-	rm -f ~/easyrsa.tgz
+	# rm -f `pwd`/easyrsa.tgz
 	cd /etc/openvpn/easy-rsa/
 	# Create the PKI, set up the CA and the server and client certificates
 	./easyrsa init-pki
@@ -271,8 +273,10 @@ auth SHA512
 tls-auth ta.key 0
 topology subnet
 server ${subnet} 255.255.255.0
+duplicate-cn
+client-to-client
 ifconfig-pool-persist ipp.txt" > /etc/openvpn/server.conf
-	echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
+	# echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
 	# DNS
 	case $DNS in
 		1)
@@ -339,7 +343,7 @@ exit 0' > $RCLOCAL
 		chmod +x $RCLOCAL
 		# Set NAT for the VPN subnet
 		iptables -t nat -A POSTROUTING -s ${subnet}/24 ! -d ${subnet}/24 -j MASQUERADE
-		sed -i "1 a\iptables -t nat -A POSTROUTING -s ${subnet}/24 ! -d ${subnet}/24 -j SNAT --to $IP" $RCLOCAL
+		sed -i "1 a\iptables -t nat -A POSTROUTING -s ${subnet}/24 ! -d ${subnet}/24 -j MASQUERADE" $RCLOCAL
 		if iptables -L -n | grep -qE '^(REJECT|DROP)'; then
 			# If iptables has at least one REJECT rule, we asume this is needed.
 			# Not the best approach but I can't think of other and this shouldn't
