@@ -159,7 +159,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 				rm -f /etc/sysctl.d/30-openvpn-forward.conf
 				echo
 				echo "OpenVPN removed!"
-			else
+			else 
 				echo
 				echo "Removal aborted!"
 			fi
