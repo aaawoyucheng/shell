@@ -39,19 +39,20 @@ fi
 
 newclient () {
 	# Generates the custom client.ovpn
-	cp /etc/openvpn/client-common.txt ~/$1.ovpn
-	echo "<ca>" >> ~/$1.ovpn
-	cat /etc/openvpn/easy-rsa/pki/ca.crt >> ~/$1.ovpn
-	echo "</ca>" >> ~/$1.ovpn
-	echo "<cert>" >> ~/$1.ovpn
-	sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/easy-rsa/pki/issued/$1.crt >> ~/$1.ovpn
-	echo "</cert>" >> ~/$1.ovpn
-	echo "<key>" >> ~/$1.ovpn
-	cat /etc/openvpn/easy-rsa/pki/private/$1.key >> ~/$1.ovpn
-	echo "</key>" >> ~/$1.ovpn
-	echo "<tls-auth>" >> ~/$1.ovpn
-	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/ta.key >> ~/$1.ovpn
-	echo "</tls-auth>" >> ~/$1.ovpn
+	cp /etc/openvpn/client-common.txt `pwd`/$1.ovpn
+	echo "<ca>" >> `pwd`/$1.ovpn
+	cat /etc/openvpn/easy-rsa/pki/ca.crt >> `pwd`/$1.ovpn
+	echo "</ca>" >> `pwd`/$1.ovpn
+	echo "<cert>" >> `pwd`/$1.ovpn
+	sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/easy-rsa/pki/issued/$1.crt >> `pwd`/$1.ovpn
+	echo "</cert>" >> `pwd`/$1.ovpn
+	echo "<key>" >> `pwd`/$1.ovpn
+	cat /etc/openvpn/easy-rsa/pki/private/$1.key >> `pwd`/$1.ovpn
+	echo "</key>" >> `pwd`/$1.ovpn
+	echo "<tls-auth>" >> `pwd`/$1.ovpn
+	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/ta.key >> `pwd`/$1.ovpn
+	echo "</tls-auth>" >> `pwd`/$1.ovpn
+	echo "log $1.log"  >> `pwd`/$1.ovpn
 }
 
 if [[ -e /etc/openvpn/server.conf ]]; then
@@ -210,7 +211,8 @@ else
 	echo "   3) Google"
 	echo "   4) OpenDNS"
 	echo "   5) Verisign"
-	read -p "DNS [1-5]: " -e -i 1 DNS
+	echo "   6) Don't push dns"
+	read -p "DNS [1-6]: " -e -i 6 DNS
 	echo
 	echo "Finally, tell me your name for the client certificate."
 	echo "Please, use one word only, no special characters."
@@ -308,6 +310,9 @@ ifconfig-pool-persist ipp.txt" > /etc/openvpn/server.conf
 		echo 'push "dhcp-option DNS 64.6.64.6"' >> /etc/openvpn/server.conf
 		echo 'push "dhcp-option DNS 64.6.65.6"' >> /etc/openvpn/server.conf
 		;;
+		6)
+		echo 'Don't push dns' 
+		;;
 	esac
 	echo "keepalive 10 120
 cipher AES-256-CBC
@@ -316,7 +321,9 @@ group $GROUPNAME
 persist-key
 persist-tun
 status openvpn-status.log
+log openvpn-server.log
 verb 3
+duplicate-cn
 crl-verify crl.pem" >> /etc/openvpn/server.conf
 	# Enable net.ipv4.ip_forward for the system
 	echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/30-openvpn-forward.conf
