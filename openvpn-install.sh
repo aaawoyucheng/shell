@@ -5,7 +5,7 @@
 # Copyright (c) 2013 Nyr. Released under the MIT License.
 set -x
 subnet=10.$(($RANDOM%253+1)).$(($RANDOM%253+1)).0
-
+workdir=`pwd`
 # Detect Debian users running the script with "sh" instead of bash
 
 if readlink /proc/$$/exe | grep -q "dash"; then
@@ -39,20 +39,20 @@ fi
 
 newclient () {
 	# Generates the custom client.ovpn
-	cp /etc/openvpn/client-common.txt `pwd`/$1.ovpn
-	echo "<ca>" >> `pwd`/$1.ovpn
-	cat /etc/openvpn/easy-rsa/pki/ca.crt >> `pwd`/$1.ovpn
-	echo "</ca>" >> `pwd`/$1.ovpn
-	echo "<cert>" >> `pwd`/$1.ovpn
-	sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/easy-rsa/pki/issued/$1.crt >> `pwd`/$1.ovpn
-	echo "</cert>" >> `pwd`/$1.ovpn
-	echo "<key>" >> `pwd`/$1.ovpn
-	cat /etc/openvpn/easy-rsa/pki/private/$1.key >> `pwd`/$1.ovpn
-	echo "</key>" >> `pwd`/$1.ovpn
-	echo "<tls-auth>" >> `pwd`/$1.ovpn
-	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/ta.key >> `pwd`/$1.ovpn
-	echo "</tls-auth>" >> `pwd`/$1.ovpn
-	echo "log $1.log"  >> `pwd`/$1.ovpn
+	cp /etc/openvpn/client-common.txt $workdir/$1.ovpn
+	echo "<ca>" >> $workdir/$1.ovpn
+	cat /etc/openvpn/easy-rsa/pki/ca.crt >> $workdir/$1.ovpn
+	echo "</ca>" >> $workdir/$1.ovpn
+	echo "<cert>" >> $workdir/$1.ovpn
+	sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/easy-rsa/pki/issued/$1.crt >> $workdir/$1.ovpn
+	echo "</cert>" >> $workdir/$1.ovpn
+	echo "<key>" >> $workdir/$1.ovpn
+	cat /etc/openvpn/easy-rsa/pki/private/$1.key >> $workdir/$1.ovpn
+	echo "</key>" >> $workdir/$1.ovpn
+	echo "<tls-auth>" >> $workdir/$1.ovpn
+	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/ta.key >> $workdir/$1.ovpn
+	echo "</tls-auth>" >> $workdir/$1.ovpn
+	echo "log $1.log"  >> $workdir/$1.ovpn
 }
 
 if [[ -e /etc/openvpn/server.conf ]]; then
@@ -78,7 +78,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 			# Generates the custom client.ovpn
 			newclient "$CLIENT"
 			echo
-			echo "Client $CLIENT added, configuration is available at:" ~/"$CLIENT.ovpn"
+			echo "Client $CLIENT added, configuration is available at:" "$workdir/$CLIENT.ovpn"
 			exit
 			;;
 			2)
@@ -230,14 +230,14 @@ else
 	fi
 	# Get easy-rsa
 	EASYRSAURL='https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz'
-	if [ ! -f `pwd`/easyrsa.tgz ];then
-		wget -O `pwd`/easyrsa.tgz "$EASYRSAURL" 2>/dev/null || curl -Lo `pwd`/easyrsa.tgz "$EASYRSAURL"
+	if [ ! -f $workdir/easyrsa.tgz ];then
+		wget -O $workdir/easyrsa.tgz "$EASYRSAURL" 2>/dev/null || curl -Lo $workdir/easyrsa.tgz "$EASYRSAURL"
 	fi
-	tar xzf `pwd`/easyrsa.tgz -C ~/
+	tar xzf $workdir/easyrsa.tgz -C ~/
 	mv ~/EasyRSA-3.0.5/ /etc/openvpn/
 	mv /etc/openvpn/EasyRSA-3.0.5/ /etc/openvpn/easy-rsa/
 	chown -R root:root /etc/openvpn/easy-rsa/
-	# rm -f `pwd`/easyrsa.tgz
+	# rm -f $workdir/easyrsa.tgz
 	cd /etc/openvpn/easy-rsa/
 	# Create the PKI, set up the CA and the server and client certificates
 	./easyrsa init-pki
@@ -413,6 +413,6 @@ verb 3" > /etc/openvpn/client-common.txt
 	echo
 	echo "Finished!"
 	echo
-	echo "Your client configuration is available at:" ~/"$CLIENT.ovpn"
+	echo "Your client configuration is available at:" "$workdir/$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
 fi
