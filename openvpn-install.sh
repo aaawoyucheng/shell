@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2013 Nyr. Released under the MIT License.
 set -x
-workdir=`pwd`
+workdir=~/
 
 function rand(){
     min=$1
@@ -289,9 +289,13 @@ dh dh.pem
 auth SHA512
 tls-auth ta.key 0
 topology subnet
+comp-lzo
+duplicate-cn
+client-to-client
+explicit-exit-notify 1
 server $server_sub 255.255.255.0
 ifconfig-pool-persist ipp.txt" > /etc/openvpn/server/server.conf
-	echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server/server.conf
+	# echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server/server.conf
 	# DNS
 	case $DNS in
 		0)
@@ -404,7 +408,10 @@ remote-cert-tls server
 auth SHA512
 cipher AES-256-CBC
 ;setenv opt block-outside-dns
+;redirect-gateway def1 bypass-dhcp
+;route 255.255.255.0
 key-direction 1
+comp-lzo
 verb 3" > /etc/openvpn/server/client-common.txt
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
