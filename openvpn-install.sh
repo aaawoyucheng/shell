@@ -418,6 +418,6 @@ verb 3" > /etc/openvpn/server/client-common.txt
 	echo
 	echo "Finished!"
 	echo
-	echo "Your client configuration is available at:" $workdir/"$CLIENT.ovpn"
+	echo "Your client configuration is available at:" $workdir"$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
 fi
