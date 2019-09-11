@@ -64,6 +64,7 @@ newclient () {
 }
 
 if [[ -e /etc/openvpn/server/server.conf ]]; then
+	server_sub=`cat ~/server_sub`
 	while :
 	do
 	clear
