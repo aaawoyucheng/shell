@@ -158,7 +158,8 @@ if [[ -e /etc/openvpn/server/server.conf ]]; then
 				if [[ "$OS" = 'debian' ]]; then
 					apt-get remove --purge -y openvpn
 				else
-					yum remove openvpn -y
+					yum erase openvpn -y
+					rm -rf /etc/openvpn
 				fi
 				echo
 				echo "OpenVPN removed!"
@@ -295,7 +296,9 @@ duplicate-cn
 client-to-client
 explicit-exit-notify 1
 server $server_sub 255.255.255.0
-ifconfig-pool-persist ipp.txt" > /etc/openvpn/server/server.conf
+ifconfig-pool-persist ipp.txt
+log-append ~/openvpn.log
+" > /etc/openvpn/server/server.conf
 	# echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server/server.conf
 	# DNS
 	case $DNS in
@@ -400,7 +403,8 @@ dev tun
 proto $PROTOCOL
 sndbuf 0
 rcvbuf 0
-remote $IP $PORT
+port $PORT
+remote $IP 
 resolv-retry infinite
 nobind
 persist-key
@@ -411,14 +415,21 @@ cipher AES-256-CBC
 ;setenv opt block-outside-dns
 ;redirect-gateway def1 bypass-dhcp
 ;route 255.255.255.0
+;route 255.255.255.0
+;route 255.255.255.0
+;route 255.255.255.0
+;route 255.255.255.0
 key-direction 1
 comp-lzo
-verb 3" > /etc/openvpn/server/client-common.txt
+verb 3
+log-append ~/openvpn.log
+" > /etc/openvpn/server/client-common.txt
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
 	echo
 	echo "Finished!"
 	echo
 	echo "Your client configuration is available at:" $workdir"$CLIENT.ovpn"
+	echo "cat $workdir$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
 fi
