@@ -422,7 +422,7 @@ cipher AES-256-CBC
 key-direction 1
 comp-lzo
 verb 3
-log-append ~/openvpn.log
+log-append openvpn.log
 " > /etc/openvpn/server/client-common.txt
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
